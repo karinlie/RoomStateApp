@@ -12,9 +12,6 @@ import java.util.function.Function;
 
 public class NetworkTask extends AsyncTask<String, Void, String> {
 
-    public boolean shouldClose = false;
-    public boolean isConnected = false;
-
     public Function<String, Void> dataHandler;
 
     @Override
@@ -23,7 +20,6 @@ public class NetworkTask extends AsyncTask<String, Void, String> {
         String synxCatHeader = params[1];
         String data = params[2];
         String response = "";
-        isConnected = true;
         System.out.println("Trying to connect Network task");
 
         try {
@@ -55,15 +51,13 @@ public class NetworkTask extends AsyncTask<String, Void, String> {
                 }
                 System.out.println(line);
 
-                if (shouldClose) {
+                if (isCancelled()) {
                     break;
                 }
             }
 
             // Close the stream
             reader.close();
-            isConnected = false;
-            shouldClose = false;
             System.out.println("Network task closed.");
         } catch (Exception e) {
             e.printStackTrace();

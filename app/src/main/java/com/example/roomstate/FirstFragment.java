@@ -18,7 +18,7 @@ import java.util.Random;
 public class FirstFragment extends Fragment {
 
     private FragmentFirstBinding binding;
-    NetworkTask networkTask = new NetworkTask();
+    NetworkTask networkTask;
 
     @Override
     public View onCreateView(
@@ -41,12 +41,9 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        binding.textviewFirst.setText("HIVEry1");
+        setDefaultText();
 
-        networkTask.dataHandler = (data -> {
-            this.dataHandler(data);
-            return null;
-        });
+
     }
 
     public void dataHandler(String data) {
@@ -65,9 +62,15 @@ public class FirstFragment extends Fragment {
     }
 
     public void setEmojiFromLoudness(double loudness) {
-        binding.textviewFirst.setText(loudness < 0.5 ? "\uD83D\uDE04" : "\uD83D\uDE21");
+        binding.textviewFirst.setText(loudness < 0.3 ? "\uD83D\uDE04" : "\uD83D\uDE21");
         binding.textviewFirst.setScaleX(17);
         binding.textviewFirst.setScaleY(17);
+    }
+
+    public void setDefaultText() {
+        binding.textviewFirst.setText("HIVEry1");
+        binding.textviewFirst.setScaleX(7);
+        binding.textviewFirst.setScaleY(7);
     }
 
     @Override
@@ -81,12 +84,19 @@ public class FirstFragment extends Fragment {
         //Random r = new Random();
         //setEmojiFromLoudness(r.nextInt(2));
 
-        if (!networkTask.isConnected) {
+        if (networkTask == null) {
+            networkTask = new NetworkTask();
             networkTask.execute("https://8group.cioty.com/example1", "4", "token=aToken_36d8715e3531fd8e8c01fcbfd26bf5af1908e14f15014d2d14817b568bc0bb0e&objectID=2&format=json");
+            networkTask.dataHandler = (data -> {
+                this.dataHandler(data);
+                return null;
+            });
             binding.buttonFirst.setText("Disconnect");
         } else {
-            networkTask.shouldClose = true;
+            networkTask.cancel(true);
+            networkTask = null;
             binding.buttonFirst.setText("Connect");
+            setDefaultText();
         }
     }
 }
