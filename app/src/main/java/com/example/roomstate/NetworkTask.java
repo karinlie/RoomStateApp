@@ -8,11 +8,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.function.Function;
 
 public class NetworkTask extends AsyncTask<String, Void, String> {
 
     public boolean shouldClose = false;
     public boolean isConnected = false;
+
+    public Function<String, Void> dataHandler;
 
     @Override
     protected String doInBackground(String... params) {
@@ -21,6 +24,7 @@ public class NetworkTask extends AsyncTask<String, Void, String> {
         String data = params[2];
         String response = "";
         isConnected = true;
+        System.out.println("Trying to connect Network task");
 
         try {
             // Create a new HTTP connection
@@ -38,6 +42,7 @@ public class NetworkTask extends AsyncTask<String, Void, String> {
             OutputStreamWriter writer = new OutputStreamWriter(con.getOutputStream());
             writer.write(data);
             writer.flush();
+            System.out.println("Network task connected");
 
             // Read the response as a stream
             InputStream inputStream = con.getInputStream();
@@ -45,7 +50,10 @@ public class NetworkTask extends AsyncTask<String, Void, String> {
             String line;
             while ((line = reader.readLine()) != null) {
                 response += line;
-                System.out.println(response);
+                if (dataHandler != null && line.length() > 0) {
+                    dataHandler.apply(line);
+                }
+                System.out.println(line);
 
                 if (shouldClose) {
                     break;

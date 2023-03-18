@@ -10,10 +10,14 @@ import androidx.fragment.app.Fragment;
 
 import com.example.roomstate.databinding.FragmentFirstBinding;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Random;
+
 public class FirstFragment extends Fragment {
 
     private FragmentFirstBinding binding;
-    private boolean happy = false;
     NetworkTask networkTask = new NetworkTask();
 
     @Override
@@ -33,15 +37,37 @@ public class FirstFragment extends Fragment {
         binding.buttonFirst.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // NavHostFragment.findNavController(FirstFragment.this)
-                //        .navigate(R.id.action_FirstFragment_to_SecondFragment);
-                // happy = !happy;
-                // binding.textviewFirst.setText(happy ? "\uD83D\uDE04" : "\uD83D\uDE12");
                 toggleHiveConnection();
             }
         });
 
         binding.textviewFirst.setText("HIVEry1");
+
+        networkTask.dataHandler = (data -> {
+            this.dataHandler(data);
+            return null;
+        });
+    }
+
+    public void dataHandler(String data) {
+        getActivity().runOnUiThread(() -> {
+            try {
+                JSONObject jsonObject = new JSONObject(data.strip()).getJSONObject("RTW");
+                if (jsonObject.getString("SENDER").equals("MicrobitErling")) {
+                    double loudness = jsonObject.getDouble("LOUDNESS");
+                    binding.textviewSmall.setText("LOUDNESS: " + String.format("%.2f", loudness));
+                    setEmojiFromLoudness(loudness);
+                }
+            } catch (JSONException e) {
+                // binding.textviewSmall.setText("Could not get loudness :(");
+            }
+        });
+    }
+
+    public void setEmojiFromLoudness(double loudness) {
+        binding.textviewFirst.setText(loudness < 0.5 ? "\uD83D\uDE04" : "\uD83D\uDE21");
+        binding.textviewFirst.setScaleX(17);
+        binding.textviewFirst.setScaleY(17);
     }
 
     @Override
@@ -51,8 +77,12 @@ public class FirstFragment extends Fragment {
     }
 
     public void toggleHiveConnection() {
+        // TODO: Change this
+        //Random r = new Random();
+        //setEmojiFromLoudness(r.nextInt(2));
+
         if (!networkTask.isConnected) {
-            networkTask.execute("https://brain.cioty.com/example", "4", "token=aToken_36d8715e3531fd8e8c01fcbfd26bf5af1908e14f15014d2d14817b568bc0bb0e&objectID=1&format=json");
+            networkTask.execute("https://8group.cioty.com/example1", "4", "token=aToken_36d8715e3531fd8e8c01fcbfd26bf5af1908e14f15014d2d14817b568bc0bb0e&objectID=2&format=json");
             binding.buttonFirst.setText("Disconnect");
         } else {
             networkTask.shouldClose = true;
